@@ -5,7 +5,7 @@
 * CLIENT_URL=http://localhost:3000 or any localhost port that you are using
 * PORT=8000
 
-* Update your endpoint in the TaskContext and usercontext files
+* Update your API endpoint in the TaskContext and usercontext files
 
 
 
