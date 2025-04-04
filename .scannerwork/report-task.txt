@@ -1,0 +1,6 @@
+projectKey=Auto
+serverUrl=http://localhost:9000
+serverVersion=25.2.0.102705
+dashboardUrl=http://localhost:9000/dashboard?id=Auto
+ceTaskId=db3858db-8079-440e-9f14-a659107a3aa8
+ceTaskUrl=http://localhost:9000/api/ce/task?id=db3858db-8079-440e-9f14-a659107a3aa8
