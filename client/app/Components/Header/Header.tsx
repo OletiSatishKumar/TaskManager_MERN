@@ -1,7 +1,7 @@
 "use client";
 import { useTasks } from "@/context/taskContext";
 import { useUserContext } from "@/context/userContext";
-import { github } from "@/utils/Icons";
+import { github, profile } from "@/utils/Icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -53,6 +53,18 @@ function Header() {
             flex items-center justify-center text-2xl border-2 border-[#E6E6E6]"
           >
             {github}
+          </Link>
+        </div>
+        <div className="flex gap-4 items-center">
+          <Link
+            href="https://in.linkedin.com/in/satisholeti"
+            passHref
+            target="_blank"
+            rel="noopener noreferrer"
+            className="h-[45px] w-[45px] text-purple-500 rounded-full 
+            flex items-center justify-center text-2xl border-2 border-[#E6E6E6]"
+          >
+            {profile}
           </Link>
         </div>
       </div>
