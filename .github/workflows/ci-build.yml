@@ -50,7 +50,7 @@ jobs:
         sed -i "s|frontend_image:.*|frontend_image: $REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME_FRONTEND:$BUILD_TAG|" charts/taskmanager/dev-values.yaml
         sed -i "s|backend_image:.*|backend_image: $REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME_BACKEND:$BUILD_TAG|" charts/taskmanager/dev-values.yaml
 
-    - name: Commit and Push Infra Update
+    - name: Commit and Push Infra Repo Update
       run: |
         cd infra-repo
         git add charts/taskmanager/dev-values.yaml
