@@ -30,7 +30,7 @@ jobs:
 
     - name: Build and Push Frontend Image
       run: |
-        docker build -t $REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME_FRONTEND:$BUILD_TAG ./frontend
+        docker build -t $REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME_FRONTEND:$BUILD_TAG ./client
         docker push $REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME_FRONTEND:$BUILD_TAG
 
     - name: Build and Push Backend Image
