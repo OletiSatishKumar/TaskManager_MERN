@@ -42,7 +42,7 @@ jobs:
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
-        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${INFRA_REPO}.git infra-repo
+        git clone https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${INFRA_REPO}.git infra-repo
 
     - name: Update Dev Values File
       run: |
