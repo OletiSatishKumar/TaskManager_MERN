@@ -1,0 +1,58 @@
+name: CI Build and Push to DockerHub
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: docker.io
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+  IMAGE_NAME_FRONTEND: taskmanager-frontend
+  IMAGE_NAME_BACKEND: taskmanager-backend
+  INFRA_REPO: OletiSatishKumar/TaskManager_MERN_Infra
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set Build Tag
+      id: build_tag
+      run: echo "BUILD_TAG=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+
+    - name: Login to DockerHub
+      run: echo "${DOCKERHUB_PASSWORD}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
+
+    - name: Build and Push Frontend Image
+      run: |
+        docker build -t $REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME_FRONTEND:$BUILD_TAG ./frontend
+        docker push $REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME_FRONTEND:$BUILD_TAG
+
+    - name: Build and Push Backend Image
+      run: |
+        docker build -t $REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME_BACKEND:$BUILD_TAG ./backend
+        docker push $REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME_BACKEND:$BUILD_TAG
+
+    - name: Clone Infra Repo
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${INFRA_REPO}.git infra-repo
+
+    - name: Update Dev Values File
+      run: |
+        cd infra-repo
+        sed -i "s|frontend_image:.*|frontend_image: $REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME_FRONTEND:$BUILD_TAG|" charts/taskmanager/dev-values.yaml
+        sed -i "s|backend_image:.*|backend_image: $REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME_BACKEND:$BUILD_TAG|" charts/taskmanager/dev-values.yaml
+
+    - name: Commit and Push Infra Update
+      run: |
+        cd infra-repo
+        git add charts/taskmanager/dev-values.yaml
+        git commit -m "Update image tags to $BUILD_TAG from App CI"
+        git push origin main
