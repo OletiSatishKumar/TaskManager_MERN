@@ -1,0 +1,17 @@
+TaskManager_MERN/
+├── .github/
+│   └── workflows/
+│       └── ci-build.yml             # GitHub Actions: CI workflow to build/push Docker images and update Infra repo
+├── backend/
+│   ├── Dockerfile                   # Dockerfile for backend
+│   ├── src/
+│   ├── package.json
+│   └── ...
+├── frontend/
+│   ├── Dockerfile                  # Dockerfile for frontend (Next.js)
+│   ├── next.config.js
+│   ├── package.json
+│   └── ...
+├── .dockerignore
+├── .gitignore
+└── README.md
