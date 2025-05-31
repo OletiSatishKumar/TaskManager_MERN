@@ -12,7 +12,6 @@ env:
 
 jobs:
   build-and-push:
-    name: Build and Push Docker Images
     runs-on: ubuntu-latest
 
     steps:
@@ -44,13 +43,13 @@ jobs:
 
     - name: Update Dev Values File
       run: |
-        cd infra-repo
-        sed -i "s|frontend_image:.*|frontend_image: $REGISTRY/${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME_FRONTEND:$BUILD_TAG|" charts/taskmanager/dev-values.yaml
-        sed -i "s|backend_image:.*|backend_image: $REGISTRY/${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME_BACKEND:$BUILD_TAG|" charts/taskmanager/dev-values.yaml
+        cd infra-repo/environments/dev
+        sed -i "s|frontend_image:.*|frontend_image: $REGISTRY/${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME_FRONTEND:$BUILD_TAG|" dev-values.yaml
+        sed -i "s|backend_image:.*|backend_image: $REGISTRY/${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME_BACKEND:$BUILD_TAG|" dev-values.yaml
 
-    - name: Commit and Push Infra Repo Update
+    - name: Commit and Push Update to Infra Repo
       run: |
         cd infra-repo
-        git add charts/taskmanager/dev-values.yaml
-        git commit -m "Update image tags to $BUILD_TAG from App CI"
-        git push origin main
+        git add environments/dev/dev-values.yaml
+        git commit -m "Update image tags to $BUILD_TAG from CI workflow"
+        git push origin master
