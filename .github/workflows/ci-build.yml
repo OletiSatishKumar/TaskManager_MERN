@@ -50,6 +50,6 @@ jobs:
     - name: Commit and Push Update to Infra Repo
       run: |
         cd infra-repo
-        git add environments/dev/dev-values.yaml
+        git add environments/dev/values-dev.yaml
         git commit -m "Update image tags to $BUILD_TAG from CI workflow"
         git push origin master
