@@ -48,8 +48,8 @@ jobs:
     - name: Update Dev Values File
       run: |
         cd infra-repo/environments/dev
-        yq e '.client.image.tag = env(BUILD_TAG)' -i values-dev.yaml
-        yq e '.backend.image.tag = env(BUILD_TAG)' -i values-dev.yaml
+        yq e '.client.image.tag = env(BUILD_TAG)' -i dev-values.yaml
+        yq e '.backend.image.tag = env(BUILD_TAG)' -i dev-values.yaml
 
     - name: Commit and Push Update to Infra Repo
       run: |
