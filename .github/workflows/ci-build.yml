@@ -19,7 +19,6 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Set Build Tag
-      id: build_tag
       run: echo "BUILD_TAG=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
     - name: Login to DockerHub
@@ -41,15 +40,20 @@ jobs:
         git config --global user.email "actions@github.com"
         git clone https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ env.INFRA_REPO }}.git infra-repo
 
+    - name: Install yq
+      run: |
+        sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+        sudo chmod +x /usr/bin/yq
+
     - name: Update Dev Values File
       run: |
         cd infra-repo/environments/dev
-        sed -i "s|frontend_image:.*|frontend_image: $REGISTRY/${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME_FRONTEND:$BUILD_TAG|" dev-values.yaml
-        sed -i "s|backend_image:.*|backend_image: $REGISTRY/${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME_BACKEND:$BUILD_TAG|" dev-values.yaml
+        yq e '.client.image.tag = env(BUILD_TAG)' -i values-dev.yaml
+        yq e '.backend.image.tag = env(BUILD_TAG)' -i values-dev.yaml
 
     - name: Commit and Push Update to Infra Repo
       run: |
         cd infra-repo
         git add environments/dev/dev-values.yaml
-        git commit -m "Update image tags to $BUILD_TAG from CI workflow"
+        git commit -m "Update image tags to $BUILD_TAG from CI workflow" || echo "No changes to commit"
         git push origin master
