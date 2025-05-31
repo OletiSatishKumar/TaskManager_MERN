@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
+    - name: Checkout App Code
       uses: actions/checkout@v3
 
     - name: Set Build Tag
