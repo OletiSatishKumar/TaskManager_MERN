@@ -8,8 +8,7 @@ env:
   REGISTRY: docker.io
   IMAGE_NAME_FRONTEND: taskmanager-frontend
   IMAGE_NAME_BACKEND: taskmanager-backend
-  INFRA_REPO: OletiSatishKumar/TaskManager_MERN_Infra
-  DEV_VALUES_PATH: environments/dev/dev-values.yaml
+  INFRA_REPO: OletiSatishKumar/TaskManager_MERN_Infra_2
 
 jobs:
   build-and-push:
@@ -42,22 +41,22 @@ jobs:
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
-        git clone https://x-access-token:${{ secrets.PAT_GITHUB }}@github.com/${{ env.INFRA_REPO }}.git infra-repo
+        git clone https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/${{ env.INFRA_REPO }}.git infra-repo
 
     - name: Install yq
       run: |
         sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
         sudo chmod +x /usr/local/bin/yq
 
-    - name: Update Dev Values File with New Image Tags
+    - name: Update Dev Patch Deployment with New Image Tags
       run: |
-        cd infra-repo
-        yq e '.client.image.tag = strenv(BUILD_TAG)' -i $DEV_VALUES_PATH
-        yq e '.backend.image.tag = strenv(BUILD_TAG)' -i $DEV_VALUES_PATH
+        cd infra-repo/dev
+        yq e '(.spec.template.spec.containers[] | select(.name == "backend") .image) = "${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:${{ env.BUILD_TAG }}"' -i patch-deployment.yaml
+        yq e '(.spec.template.spec.containers[] | select(.name == "frontend") .image) = "${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-frontend:${{ env.BUILD_TAG }}"' -i patch-deployment.yaml
 
     - name: Commit and Push Changes to Infra Repo
       run: |
         cd infra-repo
-        git add $DEV_VALUES_PATH
+        git add dev/patch-deployment.yaml
         git commit -m "Update image tags to $BUILD_TAG from CI workflow" || echo "No changes to commit"
         git push origin master
