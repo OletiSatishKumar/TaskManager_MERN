@@ -10,23 +10,23 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      FRONTEND_IMAGE: ${{ secrets.DOCKER_USERNAME }}/taskmanager-frontend
-      BACKEND_IMAGE: ${{ secrets.DOCKER_USERNAME }}/taskmanager-backend
+      FRONTEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-frontend
+      BACKEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set Docker image tags
+      - name: Set DOCKERHUB image tags
         id: vars
         run: |
           BRANCH=$(echo "${{ github.ref }}" | awk -F/ '{print $3}')
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-          echo "frontend_tag=${{ secrets.DOCKER_USERNAME }}/taskmanager-frontend:$BRANCH" >> $GITHUB_OUTPUT
-          echo "backend_tag=${{ secrets.DOCKER_USERNAME }}/taskmanager-backend:$BRANCH" >> $GITHUB_OUTPUT
+          echo "frontend_tag=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-frontend:$BRANCH" >> $GITHUB_OUTPUT
+          echo "backend_tag=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:$BRANCH" >> $GITHUB_OUTPUT
 
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
       - name: Build and Push Frontend Docker image
         run: |
@@ -67,8 +67,8 @@ jobs:
 
           echo "Updating image tags in $FILE"
 
-          sed -i "s|image: .*/taskmanager-frontend:.*|image: ${{ secrets.DOCKER_USERNAME }}/taskmanager-frontend:$BRANCH|" $FILE
-          sed -i "s|image: .*/taskmanager-backend:.*|image: ${{ secrets.DOCKER_USERNAME }}/taskmanager-backend:$BRANCH|" $FILE
+          sed -i "s|image: .*/taskmanager-frontend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-frontend:$BRANCH|" $FILE
+          sed -i "s|image: .*/taskmanager-backend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:$BRANCH|" $FILE
 
       - name: Commit and push changes
         run: |
