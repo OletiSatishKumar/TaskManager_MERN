@@ -23,17 +23,20 @@ jobs:
       - name: Set Docker image tag with timestamp
         id: vars
         run: |
-          BRANCH=$(echo "${{ github.ref_name }}")
+          BRANCH="${{ github.ref_name }}"
           TIMESTAMP=$(date +%Y%m%d-%H%M)
           TAG="$BRANCH-$TIMESTAMP"
 
-          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "frontend_tag=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-frontend:$TAG" >> $GITHUB_OUTPUT
-          echo "backend_tag=${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:$TAG" >> $GITHUB_OUTPUT
+          echo "frontend_tag=${{ env.FRONTEND_IMAGE }}:$TAG" >> $GITHUB_OUTPUT
+          echo "backend_tag=${{ env.BACKEND_IMAGE }}:$TAG" >> $GITHUB_OUTPUT
 
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Copy .env.local manually
+        run: |
+          cp ./client/.env.local ./client/.env.production.local
 
       - name: Build and Push Frontend Docker image
         run: |
@@ -49,9 +52,6 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
 
-    env:
-      BRANCH: ${{ github.ref_name }}
-
     steps:
       - name: Checkout Infra repo
         uses: actions/checkout@v4
@@ -64,20 +64,17 @@ jobs:
         run: |
           cd infra/helm/taskmanager
 
-          if [ "$BRANCH" = "dev" ]; then
-            FILE="values-dev.yaml"
-          elif [ "$BRANCH" = "prod" ]; then
-            FILE="values-prod.yaml"
-          else
-            FILE="values-dev.yaml"
-          fi
+          case "${{ github.ref_name }}" in
+            dev) FILE="values-dev.yaml" ;;
+            prod) FILE="values-prod.yaml" ;;
+            *) FILE="values-dev.yaml" ;;
+          esac
 
           echo "Updating image tags in $FILE"
+          TAG="${{ needs.build-and-push.outputs.tag }}"
 
-          TAG=${{ needs.build-and-push.outputs.tag }}
-
-          sed -i "s|image: .*/taskmanager-frontend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-frontend:$TAG|" $FILE
-          sed -i "s|image: .*/taskmanager-backend:.*|image: ${{ secrets.DOCKERHUB_USERNAME }}/taskmanager-backend:$TAG|" $FILE
+          sed -i "s|image: .*/taskmanager-frontend:.*|image: ${{ env.FRONTEND_IMAGE }}:$TAG|" $FILE
+          sed -i "s|image: .*/taskmanager-backend:.*|image: ${{ env.BACKEND_IMAGE }}:$TAG|" $FILE
 
       - name: Commit and push changes
         run: |
