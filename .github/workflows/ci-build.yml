@@ -72,6 +72,7 @@ jobs:
       - name: Update image tags in Helm values file
         run: |
           cd infra/helm/taskmanager
+          cat infra/helm/taskmanager/$FILE
 
           case "${{ github.ref_name }}" in
             dev) FILE="values-dev.yaml" ;;
