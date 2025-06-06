@@ -63,6 +63,12 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           path: infra
 
+      # Optional: Install yq if you prefer it over sed
+      # - name: Install yq
+      #   run: |
+      #     sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+      #     sudo chmod +x /usr/bin/yq
+
       - name: Update image tags in Helm values file
         run: |
           cd infra/helm/taskmanager
@@ -76,8 +82,13 @@ jobs:
           echo "Updating image tags in $FILE"
           TAG="${{ needs.build-and-push.outputs.tag }}"
 
-          sed -i "s|image: .*/taskmanager-frontend:.*|image: ${{ env.FRONTEND_IMAGE }}:$TAG|" $FILE
-          sed -i "s|image: .*/taskmanager-backend:.*|image: ${{ env.BACKEND_IMAGE }}:$TAG|" $FILE
+          # ✅ Using spacing-aware sed for matching
+          sed -i "s|^\( *image: \).*taskmanager-frontend:.*$|\1${{ env.FRONTEND_IMAGE }}:$TAG|" $FILE
+          sed -i "s|^\( *image: \).*taskmanager-backend:.*$|\1${{ env.BACKEND_IMAGE }}:$TAG|" $FILE
+
+          # ✅ Or uncomment below to use yq instead of sed
+          # yq eval ".frontend.image = \"${{ env.FRONTEND_IMAGE }}:$TAG\"" -i $FILE
+          # yq eval ".backend.image = \"${{ env.BACKEND_IMAGE }}:$TAG\"" -i $FILE
 
       - name: Commit and push changes
         run: |
@@ -85,5 +96,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git commit -m "🤖 Update image tags to ${{ needs.build-and-push.outputs.tag }}"
-          git push origin master
+
+          if git diff --cached --quiet; then
+            echo "✅ No changes to commit"
+          else
+            git commit -m "🤖 Update image tags to ${{ needs.build-and-push.outputs.tag }}"
+            git push origin master
+          fi
