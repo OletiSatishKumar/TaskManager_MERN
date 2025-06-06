@@ -1,4 +1,4 @@
-## Add these variables in your .env file 
+## Add these variables in your Backend .env file 
 
 * MONGO_URI=your_mongo_uri
 * JWT_SECRET=secret or anything random
